@@ -1,13 +1,18 @@
 from django.db import models
-# Create your models here.
+
 
 class Categorie(models.Model):
     nom = models.CharField(max_length=200, null=True)
-    
+
+
+class SousCategorie(models.Model):
+    nom = models.CharField(max_length=200, null=True)
+    categorie = models.ForeignKey(Categorie, on_delete=models.CASCADE, null=True, related_name='sous_categories')
+
 
 class Produit(models.Model):
     nom = models.CharField(max_length=200, null=True)
-    categorie = models.ForeignKey(Categorie, on_delete=models.CASCADE, null=True, related_name='produits')
+    sous_categorie = models.ForeignKey(SousCategorie, on_delete=models.CASCADE, null=True, related_name='produits')
     prix = models.FloatField(default=0)
     image = models.ImageField(upload_to='images')
     quantite = models.IntegerField(default=0)
@@ -21,6 +26,6 @@ class Client(models.Model):
 
 class Commande(models.Model):
     date = models.DateTimeField(default=None)
-    produit = models.ForeignKey(Produit, null=True, on_delete=models.PROTECT, related_name='commandes')
+    produit = models.ForeignKey(Produit, null=True, on_delete=models.PROTECT)
     client = models.ForeignKey(Client, null=True, on_delete=models.PROTECT, related_name='commandes')
 
