@@ -1,4 +1,19 @@
 from django.db import models
+import uuid
+
+
+STATUT_COMMANDE = (
+    ('0', 'En attente'),
+    ('1', 'Payée'),
+    ('2', 'Livrée'),
+    ('3', 'Annulée'),
+)
+
+MODE_PAIEMENT = (
+    ('0', 'Espèces'),
+    ('1', 'Orange Money'),
+    ('2', 'Wave'),
+)
 
 
 class Categorie(models.Model):
@@ -29,19 +44,45 @@ class Client(models.Model):
 
 class Commande(models.Model):
     date = models.DateTimeField(default=None)
-    reference_commande = models.CharField(max_length=200)
+    reference_commande = models.UUIDField(default=uuid.uuid4, editable=False)
     client_id = models.ForeignKey(Client, null=True, on_delete=models.PROTECT, related_name='commandes')
+    statut = models.CharField(max_length=1, choices=STATUT_COMMANDE, default='0')
+    mode_paiement = models.CharField(max_length=1, choices=MODE_PAIEMENT, default='0')
+
+    # update mode_paiement
+    def update_mode_paiement(self, mode_paiement):
+        self.mode_paiement = mode_paiement
+        self.save()
+
+    # update statut
+    def update_statut(self, statut):
+        self.statut = statut
+        self.save()
+
+    # process commande
+    def traiter_commande(self, liste_produits):
+        for item in liste_produits:
+            ProduitsCommande.objects.create(commande_id=self.reference_commande,
+                                            produit=item.produit.id,
+                                            quantite=item.produit.quantite,
+                                            prix=item.produit.prix,
+                                            total=item.produit.prix * item.produit.quantite)
+
+    # annuler commande
+    @staticmethod
+    def annuler_commande(self, reference_commande):
+        ProduitsCommande.objects.filter(reference_commande=reference_commande).delete()
 
 
-class DetailCommande(models.Model):
-    commande = models.ForeignKey(Commande, on_delete=models.CASCADE, null=True, related_name='details_commandes')
-    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, null=True, related_name='details_commandes')
+class ProduitsCommande(models.Model):
+    commande_id = models.ForeignKey(Commande, on_delete=models.CASCADE, null=True, related_name='produits_commande')
+    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, null=True)
     quantite = models.IntegerField(default=0)
     prix = models.FloatField(default=0)
+    total = models.FloatField(default=0)
 
 
 class Panier(models.Model):
-
     liste_produits = []
 
     # add a product to the cart
