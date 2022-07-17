@@ -63,15 +63,15 @@ class Commande(models.Model):
     def traiter_commande(self, liste_produits):
         for item in liste_produits:
             ProduitsCommande.objects.create(commande_id=self.reference_commande,
-                                            produit=item.produit.id,
-                                            quantite=item.produit.quantite,
-                                            prix=item.produit.prix,
-                                            total=item.produit.prix * item.produit.quantite)
+                                            produit=item['produit'].id,
+                                            quantite=item['produit'].quantite,
+                                            prix=item['produit'].prix,
+                                            total=item['produit'].prix * item['produit'].quantite)
 
     # annuler commande
     @staticmethod
-    def annuler_commande(self, reference_commande):
-        ProduitsCommande.objects.filter(reference_commande=reference_commande).delete()
+    def annuler_commande(self, commande_id):
+        ProduitsCommande.objects.filter(commande_id=commande_id).delete()
 
 
 class ProduitsCommande(models.Model):
@@ -103,14 +103,8 @@ class Panier(models.Model):
 
     # get the total price of the cart
     def get_total_price(self):
-        total_price = 0
-        for produit_panier in self.liste_produits:
-            total_price += produit_panier['produit'].prix * produit_panier['quantite']
-        return total_price
+        return sum([produit_panier['produit'].prix * produit_panier['quantite'] for produit_panier in self.liste_produits])
 
     # get the total quantity of the cart
     def get_total_quantity(self):
-        total_quantity = 0
-        for produit_panier in self.liste_produits:
-            total_quantity += produit_panier['quantite']
-        return total_quantity
+        return sum([produit_panier['quantite'] for produit_panier in self.liste_produits])
