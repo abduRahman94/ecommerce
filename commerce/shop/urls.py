@@ -3,10 +3,10 @@ from .views import index_view, commande_view, contact_view, detail_view, shop_vi
 
 
 urlpatterns = [
-    path('index/', index_view),
-    path('contact/', contact_view),
-    path('detail/', detail_view),
-    path('commande/', commande_view),
-    path('boutique/', shop_view),
-    path('panier/', cart_view),
+    path('', index_view, name='home'),
+    path('contact/', contact_view, name='contact'),
+    path('detail/', detail_view, name='detail'),
+    path('commande/', commande_view, name='commande'),
+    path('boutique/', shop_view, name='boutique'),
+    path('panier/', cart_view, name='panier'),
 ]
